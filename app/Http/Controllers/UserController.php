@@ -100,7 +100,7 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function modifierUtilisateur(Request $request, $id)
+    public function modifierUtilisateur(Request $request, int $id)
     {
         $userConnecte = $request->user();
 
@@ -175,7 +175,7 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function supprimerUtilisateur(Request $request, $id)
+    public function supprimerUtilisateur(Request $request, int $id)
     {
         $userConnecte = $request->user();
 
@@ -226,7 +226,7 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function changerStatutUtilisateur(Request $request, $id)
+    public function changerStatutUtilisateur(Request $request, int $id)
     {
         $userConnecte = $request->user();
 
@@ -288,9 +288,7 @@ class UserController extends Controller
         ], 200);
     }
 
-
-    
-    public function detailUtilisateur(Request $request, $id)
+    public function detailUtilisateur(Request $request, int $id)
     {
         $userConnecte = $request->user();
 
@@ -331,6 +329,7 @@ class UserController extends Controller
             'data' => $utilisateur,
         ], 200);
     }
+
 
 
 

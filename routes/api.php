@@ -24,6 +24,8 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/ecoles/{id}', [EcoleController::class, 'modifierEcole']);
     Route::patch('/ecoles/{id}/statut', [EcoleController::class, 'changerStatutEcole']);
     Route::delete('/ecoles/{id}', [EcoleController::class, 'supprimerEcole']);
+    Route::get('/ecoles/{id}', [EcoleController::class, 'detailEcole']);
+    Route::get('/ecoles/{id}/stats', [EcoleController::class, 'statsEcole']);
 });
 
 

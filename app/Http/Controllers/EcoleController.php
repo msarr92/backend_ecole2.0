@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ecole;
+use App\Models\User;
+use App\Models\Classes;
+use App\Models\Paiements_mensuels;
+use App\Models\Eleves;
+use App\Models\Inscriptions;
 use Illuminate\Http\Request;
 
 class EcoleController extends Controller
@@ -90,7 +95,7 @@ class EcoleController extends Controller
         ], 200);
     }
 
-    public function modifierEcole(Request $request, $id)
+    public function modifierEcole(Request $request, int $id)
     {
         // Vérifier utilisateur connecté
         $user = $request->user();
@@ -146,7 +151,7 @@ class EcoleController extends Controller
         ], 200);
     }
 
-    public function changerStatutEcole(Request $request, $id)
+    public function changerStatutEcole(Request $request, int $id)
     {
         $user = $request->user();
 
@@ -185,7 +190,7 @@ class EcoleController extends Controller
         ], 200);
     }
 
-    public function supprimerEcole(Request $request, $id)
+    public function supprimerEcole(Request $request, int $id)
     {
         $user = $request->user();
 
@@ -215,4 +220,125 @@ class EcoleController extends Controller
             'message' => 'Ecole supprimée avec succès',
         ], 200);
     }
+
+
+
+    public function detailEcole(Request $request, int $id)
+    {
+        $user = $request->user();
+
+        // Vérifier authentification
+        if (! $user) {
+            return response()->json([
+                'message' => 'Non authentifié',
+            ], 401);
+        }
+
+        // Vérifier rôle
+        if (! in_array($user->role, ['SUPER_ADMIN', 'ADMIN_ECOLE'])) {
+            return response()->json([
+                'message' => 'Accès refusé',
+            ], 403);
+        }
+
+        // Récupérer école avec relations
+        $ecole = Ecole::with([
+            'users',
+            'niveaux',
+            'classes',
+            'eleves',
+            'inscriptions',
+        ])->find($id);
+
+        if (! $ecole) {
+            return response()->json([
+                'message' => 'Ecole introuvable',
+            ], 404);
+        }
+
+        // ADMIN_ECOLE → accès seulement à son école
+        if ($user->role === 'ADMIN_ECOLE') {
+            if ($ecole->id !== $user->ecole_id) {
+                return response()->json([
+                    'message' => 'Accès refusé. Cette école ne vous appartient pas.',
+                ], 403);
+            }
+        }
+
+        return response()->json([
+            'message' => 'Détails de l’école récupérés avec succès',
+            'data' => $ecole,
+        ], 200);
+    }
+
+
+     public function statsEcole(Request $request, int $id)
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'Non authentifié',
+            ], 401);
+        }
+
+        if (! in_array($user->role, ['SUPER_ADMIN', 'ADMIN_ECOLE'])) {
+            return response()->json([
+                'message' => 'Accès refusé',
+            ], 403);
+        }
+
+        $ecole = Ecole::find($id);
+
+        if (! $ecole) {
+            return response()->json([
+                'message' => 'Ecole introuvable',
+            ], 404);
+        }
+
+        if ($user->role === 'ADMIN_ECOLE' && $user->ecole_id !== $ecole->id) {
+            return response()->json([
+                'message' => 'Accès refusé. Vous ne pouvez voir que les statistiques de votre école.',
+            ], 403);
+        }
+
+        $totalEleves = Eleves::where('ecole_id', $ecole->id)->count();
+
+        $totalEnseignants = User::where('ecole_id', $ecole->id)
+            ->where('role', 'PROFESSEUR')
+            ->count();
+
+        $totalClasses = Classes::where('ecole_id', $ecole->id)->count();
+
+        $revenuInscriptions = Inscriptions::where('ecole_id', $ecole->id)
+            ->sum('montant_paye');
+
+        $revenuPaiementsMensuels = Paiements_mensuels::where('ecole_id', $ecole->id)
+            ->sum('montant_paye');
+
+        $revenuTotal = $revenuInscriptions + $revenuPaiementsMensuels;
+
+        return response()->json([
+            'message' => 'Statistiques de l’école récupérées avec succès',
+            'data' => [
+                'ecole' => [
+                    'id' => $ecole->id,
+                    'nom_ecole' => $ecole->nom_ecole,
+                    'code_ecole' => $ecole->code_ecole,
+                    'statut' => $ecole->statut,
+                ],
+                'stats' => [
+                    'total_eleves' => $totalEleves,
+                    'total_enseignants' => $totalEnseignants,
+                    'total_classes' => $totalClasses,
+                    'revenu_inscriptions' => $revenuInscriptions,
+                    'revenu_paiements_mensuels' => $revenuPaiementsMensuels,
+                    'revenu_total' => $revenuTotal,
+                ],
+            ],
+        ], 200);
+    }
+
+
+
 }
