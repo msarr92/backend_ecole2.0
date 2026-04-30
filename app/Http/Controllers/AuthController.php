@@ -75,4 +75,9 @@ class AuthController extends Controller
             'message' => 'Déconnexion réussie',
         ]);
     }
+
+
+    
+
+
 }

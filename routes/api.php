@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EcoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NiveauController;
 
 
 
@@ -16,6 +18,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('/activities/recent', [DashboardController::class, 'activitesRecentes']);
+});
 
 
 Route::middleware('auth:api')->group(function () {
@@ -38,3 +44,6 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/users/{id}', [UserController::class, 'detailUtilisateur']);
 });
 
+Route::middleware('auth:api')->group(function () {
+    Route::post('/niveaux', [NiveauController::class, 'ajouterNiveau']);
+});
