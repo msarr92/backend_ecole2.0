@@ -6,6 +6,7 @@ use App\Http\Controllers\EcoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NiveauController;
+use App\Http\Controllers\ClasseController;
 
 
 
@@ -46,4 +47,14 @@ Route::middleware('auth:api')->group(function () {
 
 Route::middleware('auth:api')->group(function () {
     Route::post('/niveaux', [NiveauController::class, 'ajouterNiveau']);
+    Route::get('/niveaux', [NiveauController::class, 'listeNiveaux']);
+    Route::put('/niveaux/{id}', [NiveauController::class, 'modifierNiveau']);
+    Route::delete('/niveaux/{id}', [NiveauController::class, 'supprimerNiveau']);
+});
+
+
+
+Route::middleware('auth:api')->group(function () {
+    Route::post('/classes', [ClasseController::class, 'ajouterClasse']);
+    Route::get('/classes', [ClasseController::class, 'listeClasses']);
 });

@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ecole;
-use App\Models\User;
 use App\Models\Classes;
-use App\Models\Paiements_mensuels;
+use App\Models\Ecole;
 use App\Models\Eleves;
 use App\Models\Inscriptions;
+use App\Models\Paiements_mensuels;
+use App\Models\User;
+use App\Models\Niveau;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EcoleController extends Controller
 {
@@ -26,7 +28,6 @@ class EcoleController extends Controller
 
     public function ajouterEcole(Request $request)
     {
-        // Vérifier si connecté
         $user = $request->user();
 
         if (! $user) {
@@ -35,14 +36,12 @@ class EcoleController extends Controller
             ], 401);
         }
 
-        // Vérifier le rôle
         if ($user->role !== 'SUPER_ADMIN') {
             return response()->json([
                 'message' => 'Accès refusé. Seul le SUPER_ADMIN peut ajouter une école.',
             ], 403);
         }
 
-        // Validation (sans code_ecole)
         $request->validate([
             'nom_ecole' => 'required|string|max:255',
             'type_ecole' => 'required|in:PRIMAIRE,COLLEGE,PRIMAIRE_COLLEGE',
@@ -50,29 +49,54 @@ class EcoleController extends Controller
             'telephone' => 'required|string',
             'email' => 'required|email',
             'annee_academique_courante' => 'required|string',
-            'statut' => 'in:ACTIVE,SUSPENDUE',
+            'statut' => 'nullable|in:ACTIVE,SUSPENDUE',
+
+            'niveaux' => 'required|array|min:1',
+            'niveaux.*.nom_niveau' => 'required|string|max:255',
+            'niveaux.*.description' => 'nullable|string',
         ]);
 
-        // Générer le code école
-        $codeEcole = $this->generateCodeEcole();
+        DB::beginTransaction();
 
-        // Création
-        $ecole = Ecole::create([
-            'nom_ecole' => $request->nom_ecole,
-            'code_ecole' => $codeEcole,
-            'type_ecole' => $request->type_ecole,
-            'adresse' => $request->adresse,
-            'telephone' => $request->telephone,
-            'email' => $request->email,
-            'logo' => $request->logo ?? null,
-            'annee_academique_courante' => $request->annee_academique_courante,
-            'statut' => $request->statut ?? 'ACTIVE',
-        ]);
+        try {
+            $codeEcole = $this->generateCodeEcole();
 
-        return response()->json([
-            'message' => 'Ecole créée avec succès',
-            'data' => $ecole,
-        ], 201);
+            $ecole = Ecole::create([
+                'nom_ecole' => $request->nom_ecole,
+                'code_ecole' => $codeEcole,
+                'type_ecole' => $request->type_ecole,
+                'adresse' => $request->adresse,
+                'telephone' => $request->telephone,
+                'email' => $request->email,
+                'logo' => $request->logo ?? null,
+                'annee_academique_courante' => $request->annee_academique_courante,
+                'statut' => $request->statut ?? 'ACTIVE',
+            ]);
+
+            foreach ($request->niveaux as $niveauData) {
+                Niveau::create([
+                    'nom_niveau' => $niveauData['nom_niveau'],
+                    'description' => $niveauData['description'] ?? null,
+                    'ecole_id' => $ecole->id,
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Ecole créée avec ses niveaux avec succès',
+                'data' => $ecole->load('niveaux'),
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Erreur lors de la création de l’école',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+
     }
 
     public function listeEcoles(Request $request)
@@ -221,8 +245,6 @@ class EcoleController extends Controller
         ], 200);
     }
 
-
-
     public function detailEcole(Request $request, int $id)
     {
         $user = $request->user();
@@ -271,8 +293,7 @@ class EcoleController extends Controller
         ], 200);
     }
 
-
-     public function statsEcole(Request $request, int $id)
+    public function statsEcole(Request $request, int $id)
     {
         $user = $request->user();
 
@@ -338,8 +359,4 @@ class EcoleController extends Controller
             ],
         ], 200);
     }
-
-
-   
-
 }

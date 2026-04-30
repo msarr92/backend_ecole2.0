@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Ecole extends Model
 {
@@ -45,4 +45,6 @@ class Ecole extends Model
     {
         return $this->hasMany(Inscriptions::class);
     }
+
+   
 }
