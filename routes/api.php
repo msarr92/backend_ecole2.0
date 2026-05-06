@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NiveauController;
 use App\Http\Controllers\ClasseController;
+use App\Http\Controllers\MatiereController;
 
 
 
@@ -59,5 +60,13 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/classes', [ClasseController::class, 'listeClasses']);
     Route::put('/classes/{id}', [ClasseController::class, 'modifierClasse']);
     Route::delete('/classes/{id}', [ClasseController::class, 'supprimerClasse']);
-     Route::get('/classes/{id}', [ClasseController::class, 'detailClasse']);
+    Route::get('/classes/{id}', [ClasseController::class, 'detailClasse']);
+});
+
+
+Route::middleware('auth:api')->group(function () {
+    Route::post('/matieres', [MatiereController::class, 'ajouterMatiere']);
+    Route::get('/matieres', [MatiereController::class, 'listeMatieres']);
+    Route::put('/matieres/{id}', [MatiereController::class, 'modifierMatiere']);
+    Route::delete('/matieres/{id}', [MatiereController::class, 'supprimerMatiere']);
 });

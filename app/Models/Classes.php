@@ -38,5 +38,11 @@ class Classes extends Model
         return $this->hasMany(Inscriptions::class, 'classe_id');
     }
 
+    public function matieres()
+    {
+        return $this->hasMany(Matieres::class, 'classe_id');
+    }
+
+    
 
 }
