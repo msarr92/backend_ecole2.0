@@ -24,6 +24,6 @@ class Matieres extends Model
 
     public function notes()
     {
-        return $this->hasMany(Notes::class);
+        return $this->hasMany(Notes::class, 'matiere_id');
     }
 }

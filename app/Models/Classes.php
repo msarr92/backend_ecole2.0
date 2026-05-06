@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Classes extends Model
 {
@@ -30,11 +30,13 @@ class Classes extends Model
 
     public function eleves()
     {
-        return $this->hasMany(Eleves::class);
+        return $this->hasMany(Eleves::class, 'classe_id');
     }
 
     public function inscriptions()
     {
-        return $this->hasMany(Inscriptions::class);
+        return $this->hasMany(Inscriptions::class, 'classe_id');
     }
+
+
 }

@@ -57,4 +57,7 @@ Route::middleware('auth:api')->group(function () {
 Route::middleware('auth:api')->group(function () {
     Route::post('/classes', [ClasseController::class, 'ajouterClasse']);
     Route::get('/classes', [ClasseController::class, 'listeClasses']);
+    Route::put('/classes/{id}', [ClasseController::class, 'modifierClasse']);
+    Route::delete('/classes/{id}', [ClasseController::class, 'supprimerClasse']);
+     Route::get('/classes/{id}', [ClasseController::class, 'detailClasse']);
 });
